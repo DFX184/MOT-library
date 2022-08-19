@@ -15,12 +15,8 @@ _compare_map = {
     "default"  : (lt,gt)
 }
 
-
-def association_with_distance(tracker_boxes,detection_boxes,distance = "iou",distance_threshold = 0.3):
-    if len(tracker_boxes) == 0:
-        return np.arange(len(detection_boxes)),np.empty((0,5),dtype = np.int_),np.empty((0,2),dtype = np.int_)
-    if len(detection_boxes) == 0:
-        return np.empty((0,5),dtype = np.int_), np.arange(len(tracker_boxes)),np.empty((0,2),dtype = np.int_)
+def match_box(tracker_boxes,detection_boxes,distance,distance_threshold):
+    
     
     distance = distance.lower()
     if distance not in _distance_map and str(type(distance)) != "function":
@@ -31,15 +27,15 @@ def association_with_distance(tracker_boxes,detection_boxes,distance = "iou",dis
         raise RuntimeError(
             r"distance threshold must be (0,1]"
         )
+        
+    if len(detection_boxes) == 0 or len(tracker_boxes) == 0:
+        return np.empty(shape=(0,2)),np.empty((0,0))
     if str(type(distance)) == "function":
         matrix = distance(detection_boxes,
                           tracker_boxes)
     else:
         matrix = _distance_map[distance](detection_boxes,tracker_boxes)
-    unmatched_tracker = []
-    unmatched_detecher= []
-    matches = []
-    
+
     comp1,comp2       = _compare_map[distance] if not str(type(distance)) == "function" else _compare_map['default']
     
     
@@ -57,7 +53,30 @@ def association_with_distance(tracker_boxes,detection_boxes,distance = "iou",dis
             matched_indices = np.array(list(zip(x,y)),dtype = np.int_)
     else:
         matched_indices = np.empty(shape=(0,2))
+    
+    return matched_indices,matrix
+
+
+def association_with_distance(tracker_boxes,detection_boxes,**kargs):
+    if "distance" not in kargs:
+        distance = "iou"
+    else:
+        distance = kargs['distance']
         
+    if "distance_threshold" not in kargs:
+        distance_threshold = 0.3
+    else:
+        distance_threshold = kargs['distance_threshold']
+    matched_indices,matrix = match_box(
+        tracker_boxes,
+        detection_boxes,
+        distance,
+        distance_threshold
+    )
+    unmatched_tracker = []
+    unmatched_detecher= []
+    matches = []
+    comp1,comp2       = _compare_map[distance] if not str(type(distance)) == "function" else _compare_map['default']
     for idx in range(len(detection_boxes)):
         if idx not in matched_indices[:,0]:
             unmatched_detecher.append(idx)
@@ -85,6 +104,7 @@ def association_with_distance(tracker_boxes,detection_boxes,distance = "iou",dis
     return (
         unmatched_detecher,
         unmatched_tracker,
-        matches
+        matches,
+        []
     )
     

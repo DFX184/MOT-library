@@ -9,8 +9,7 @@ class BaseMot:
                  detecher,
                  max_lost  = 5,
                  threshold = 0.3,
-                 distance      = "iou",
-                 assoc_func    = association_with_distance):
+                 distance      = "iou"):
         """
         detecher is a function,take a image output boxes and score (eg yolov5,yolovx)
         iou_threshold 
@@ -22,19 +21,22 @@ class BaseMot:
         self.frame            = 0
         self.distance         = distance
         self.max_lost         = max_lost
-        self.assoc_func       = lambda x,y : association_with_distance(x,y,
-                                                                      self.distance,
-                                                                      self.threshold)
         
     def add_new_tracker(self,unmatched_detection,boxes):
         for idx in unmatched_detection:
-            self.trackers.append(
-                BaseTracker(
-                    self.ID,
-                    boxes[idx]
+            try:
+                self.trackers.append(
+                    BaseTracker(
+                        self.ID,
+                        boxes[idx]
+                    )
                 )
-            )
-            self.ID += 1
+                self.ID += 1
+            except IndexError:
+                print(idx)
+    
+    def assco_func(self,tracker_boxes,boxes):
+        return association_with_distance(tracker_boxes,boxes,distance = self.distance,distance_threshold = self.threshold)
     
     def get_result(self):
         result = np.array([
@@ -47,7 +49,8 @@ class BaseMot:
     
     
     def get_tracker_boxes(self):
-        return np.array([tk.get_state() for tk in self.trackers],dtype = np.float32)
+        return np.array([tk.get_state() for tk in self.trackers if tk.unmatched_time == 0 ],dtype = np.float32)
+    
     
     def update(self,img):
         if not(isinstance(img,np.ndarray)):
@@ -61,24 +64,23 @@ class BaseMot:
         
         tracker_boxes = tracker_boxes.reshape(-1,5)
         
-        unmatched_detection,unmatched_tracker,matches = self.assoc_func(tracker_boxes,
-                                                                         boxes)
-        
+        unmatched_detection,unmatched_tracker,matches,to_del = self.assco_func(tracker_boxes,boxes)
                                                                                
         ### association boxes to tracker
         for m in matches:
             self.trackers[m[1]].update(boxes[m[0]])
         ### delete unmatched boxes 
-        del_idxs = []
+        del_idxs = set()
         
         for idx in unmatched_tracker:
             self.trackers[idx].unmatched_time += 1
             if self.trackers[idx].unmatched_time >= self.max_lost:
-                del_idxs.append(
+                del_idxs.add(
                     idx
                 )
-                
-        for idx in np.sort(unmatched_tracker)[::-1]:
+        
+        del_idxs = list(del_idxs & set(to_del))
+        for idx in np.sort(del_idxs)[::-1]:
             try:
                 self.trackers.pop(idx)
             except:

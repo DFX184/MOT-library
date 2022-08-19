@@ -20,7 +20,7 @@ def convert_motchallenge(frame_id,results):
      ],dtype = np.str_)
     
 
-def evaluate_mot(predict_filename,truth_filename,fmt = "mot20"):
+def evaluate_mot(predict_filename,truth_filename,fmt = "mot16"):
     gt = mm.io.loadtxt(truth_filename, fmt=fmt)
     ts = mm.io.loadtxt(predict_filename, fmt=fmt)
     acc=mm.utils.compare_to_groundtruth(gt, ts, 'iou',distth=0.5)

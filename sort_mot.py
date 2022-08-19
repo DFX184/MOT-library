@@ -9,26 +9,28 @@ from tracker.sort_tracker import SortTracker
 class SortMot(BaseMot):
     def __init__(self,detecher,min_hit = 3, max_lost  = 5,
                  threshold = 0.3,
-                 distance      = "iou",
-                 assoc_func    = association_with_distance):
+                 distance      = "iou"):
         super().__init__(
             detecher,
-            max_lost  = 5,
-            threshold = 0.3,
-            distance      = "iou",
-            assoc_func    = association_with_distance
+            max_lost  = max_lost,
+            threshold = threshold,
+            distance      = distance 
         )
         self.min_hit = min_hit
     
     def add_new_tracker(self,unmatched_detection,boxes):
         for idx in unmatched_detection:
-            self.trackers.append(
-                SortTracker(
-                    self.ID,
-                    boxes[idx]
+            try:
+                self.trackers.append(
+                    SortTracker(
+                        self.ID,
+                        boxes[int(idx)]
+                    )
                 )
-            )
-            self.ID += 1
+                self.ID += 1
+            except:
+                print(idx,unmatched_detection)
+
     
     def get_result(self):
         result = np.array([
@@ -38,6 +40,7 @@ class SortMot(BaseMot):
         if len(result) == 0:
             return np.empty([0,5],dtype = np.float32)
         return result
+    
     
     def get_tracker_boxes(self):
         trks = np.zeros((len(self.trackers), 5))
