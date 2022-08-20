@@ -21,3 +21,18 @@ https://user-images.githubusercontent.com/59595277/185734746-862c86e6-e5fe-4028-
 
 https://user-images.githubusercontent.com/59595277/185734752-511c643b-90de-4eec-9339-743a4b12f463.mp4
 
+
+## Usage
+
+```py
+from byte_mot import *
+detector = xxx # your detector
+mot      = ByteMot(detecher)
+mot.update(img) # where image is numpy arrary
+```
+
+```py
+from detector import YoloX
+yolox = YoloX.YoloXInference("bytetrack_x_mot17")
+yolox(img) #
+```
