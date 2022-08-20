@@ -106,14 +106,14 @@ def association_with_byte(tracker_boxes,detection_boxes,high_score_threshold = 0
 
 
 class ByteMot(sort_mot.SortMot):
-    def __init__(self,detehcer,
+    def __init__(self,detector,
                  high_score_threshold = 0.6,
                  lower_score_threshold= 0.2,
                  min_hit = 3, max_lost  = 5,
                  threshold = 0.3,
                  distance      = "iou"):
         super().__init__(
-            detecher = detehcer,
+            detector = detector,
             min_hit  = min_hit,
             max_lost = max_lost,
             threshold= threshold,
