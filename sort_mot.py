@@ -7,11 +7,11 @@ from tracker.sort_tracker import SortTracker
 
 
 class SortMot(BaseMot):
-    def __init__(self,detecher,min_hit = 3, max_lost  = 5,
+    def __init__(self,detector,min_hit = 3, max_lost  = 5,
                  threshold = 0.3,
                  distance      = "iou"):
         super().__init__(
-            detecher,
+            detector,
             max_lost  = max_lost,
             threshold = threshold,
             distance      = distance 
