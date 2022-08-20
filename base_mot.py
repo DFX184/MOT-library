@@ -6,7 +6,7 @@ from tracker.base_tracker import BaseTracker
 
 class BaseMot:
     def __init__(self,
-                 detecher,
+                 detector,
                  max_lost  = 5,
                  threshold = 0.3,
                  distance      = "iou"):
@@ -14,7 +14,7 @@ class BaseMot:
         detecher is a function,take a image output boxes and score (eg yolov5,yolovx)
         iou_threshold 
         """
-        self.detecher         = detecher
+        self.detector         = detector
         self.threshold        = threshold
         self.trackers         = []
         self.ID               = 1
@@ -57,7 +57,7 @@ class BaseMot:
             raise RuntimeError("image must be numpy array")
             
         self.frame += 1
-        boxes      = self.detecher(img) # where box is [x1,y1,x2,y2,score]
+        boxes      = self.detector(img) # where box is [x1,y1,x2,y2,score]
         boxes      = np.array(boxes,dtype = np.float32)
         
         tracker_boxes = self.get_tracker_boxes()
